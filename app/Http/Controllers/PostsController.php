@@ -13,4 +13,11 @@ class PostsController extends Controller
         $posts = Post::all();
         return response()->json($posts);
     }
+
+    // Affiche un post
+    public function showPost($id)
+    {
+        $post = Post::with('galery', 'comments.user')->findOrFail($id);
+        return response()->json($post);
+    }
 }

@@ -21,6 +21,12 @@ class Post extends Model
 
     public function categories()
     {
-        return $this->hasMany(categgories::class);
+        return $this->hasMany(categories::class);
     }
+
+    public function galery()
+    {
+        return $this->hasMany(Galerie::class, 'post_id', 'id');
+    }
+
 }

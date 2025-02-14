@@ -11,6 +11,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/posts', [PostsController::class, 'indexPosts']);
 Route::get('/categories', [CategoriesController::class, 'indexCategories']);
+Route::get('/posts/{id}', [PostsController::class, 'showPost']);
 
 // Groupe de routes protégées par le middleware Sanctum
 Route::middleware('auth:sanctum')->group(function () {
