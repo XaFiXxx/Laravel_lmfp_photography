@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostsController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\GalerieController;
+use App\Http\Controllers\CommentsController;
 
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
@@ -21,6 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    Route::post('/comments/{postId}', [CommentsController::class, 'createComment']);
     
     // Route pour la déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
