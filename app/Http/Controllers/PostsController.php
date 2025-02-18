@@ -14,10 +14,15 @@ class PostsController extends Controller
         return response()->json($posts);
     }
 
-    // Affiche un post
     public function showPost($id)
     {
-        $post = Post::with('galery', 'comments.user')->findOrFail($id);
+        $post = Post::with([
+            'galery',
+            'comments' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            },
+            'comments.user'
+        ])->findOrFail($id);
         return response()->json($post);
     }
 }
