@@ -25,4 +25,22 @@ class PostsController extends Controller
         ])->findOrFail($id);
         return response()->json($post);
     }
+
+    public function getRandomPost()
+    {
+        // Récupère un post au hasard avec ses relations (galery et commentaires avec utilisateur)
+        $post = Post::with('galery', 'comments.user')->inRandomOrder()->first();
+        return response()->json($post);
+    }
+
+    public function getLastThreePosts()
+    {
+        // Récupère les 3 derniers posts publiés triés par date de création décroissante
+        $posts = Post::with('galery', 'comments.user')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(2)
+                    ->get();
+        return response()->json($posts);
+    }
+
 }
