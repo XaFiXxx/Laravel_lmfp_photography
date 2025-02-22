@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/dash/login', [AuthController::class, 'dashLogin']);
 // Groupe de routes protégées par le middleware Sanctum et admin
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
    
    Route::get('/dash/users', [UsersController::class, 'index']);
