@@ -69,4 +69,39 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Déconnexion réussie!'], 200);
     }
+
+
+    // ------------ DASHBOARD ------------ //
+
+    public function dashLogin(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (!auth()->attempt($credentials)) {
+            return response()->json(['message' => 'Identifiants invalides.'], 401);
+        }
+
+        $user = auth()->user();
+
+        // Vérifier si l'utilisateur n'est pas admin en fonction de la colonne isAdmin (1 = admin)
+        if ($user->isAdmin != 1) {
+            return response()->json(['message' => 'Accès non autorisé.'], 403);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message'    => 'Connexion réussie!',
+            'user'       => $user,
+            'auth_token' => $token,
+            'token_type' => 'Bearer',
+        ], 200);
+    }
+
+
+    public function dashLogout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Déconnexion réussie!'], 200);
+    }
 }
