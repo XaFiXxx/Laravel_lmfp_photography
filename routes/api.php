@@ -7,6 +7,7 @@ use App\Http\Controllers\PostsController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\GalerieController;
 use App\Http\Controllers\CommentsController;
+use App\Http\Controllers\UsersController;
 
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
@@ -17,9 +18,6 @@ Route::get('/posts/{id}', [PostsController::class, 'showPost']);
 Route::get('/galerie', [GalerieController::class, 'index']);
 Route::get('/random-post', [PostsController::class, 'getRandomPost']);
 Route::get('/last-three-posts', [PostsController::class, 'getLastThreePosts']);
-
-// ------------------ DASHBOARD ------------------ //
-Route::post('/dash/login', [AuthController::class, 'dashLogin']);
 
 
 // Groupe de routes protégées par le middleware Sanctum
@@ -34,4 +32,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route pour la déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/dash/logout', [AuthController::class, 'dashLogout']);
+});
+
+
+// ------------------ DASHBOARD ------------------ //
+
+Route::post('/dash/login', [AuthController::class, 'dashLogin']);
+// Groupe de routes protégées par le middleware Sanctum et admin
+Route::middleware(['auth', 'admin'])->group(function () {
+
+   
+   Route::get('/dash/users', [UsersController::class, 'index']);
+    // Autres routes réservées aux administrateurs
 });
