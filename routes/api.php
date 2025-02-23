@@ -45,4 +45,5 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/dash/users', [UsersController::class, 'index']);
     Route::get('/dash/user/{id}', [UsersController::class, 'findUserById']);
     Route::post('/dash/user/{id}', [UsersController::class, 'updateUser']);
+    Route::get('/dash/posts', [PostsController::class, 'dashIndexPosts']);
 });

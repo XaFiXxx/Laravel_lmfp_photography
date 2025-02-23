@@ -43,4 +43,11 @@ class PostsController extends Controller
         return response()->json($posts);
     }
 
+    public function dashIndexPosts()
+    {
+        // Récupère les posts avec leurs relations (galery et commentaires avec utilisateur)
+        $posts = Post::with('galery', 'comments.user', 'user')->get();
+        return response()->json($posts);
+    }
+
 }

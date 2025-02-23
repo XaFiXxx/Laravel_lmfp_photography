@@ -1,6 +1,10 @@
 <?php
 
 namespace App\Models;
+use App\Models\User;
+use App\Models\Comment;
+use App\Models\Galerie;
+use App\Models\categories;
 
 use Illuminate\Database\Eloquent\Model;
 
