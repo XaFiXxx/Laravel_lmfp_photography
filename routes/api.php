@@ -41,9 +41,14 @@ Route::post('/dash/login', [AuthController::class, 'dashLogin']);
 // Groupe de routes protégées par le middleware Sanctum et admin
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
-   
+   // ------------- Routes des users
     Route::get('/dash/users', [UsersController::class, 'index']);
     Route::get('/dash/user/{id}', [UsersController::class, 'findUserById']);
     Route::post('/dash/user/{id}', [UsersController::class, 'updateUser']);
+    Route::delete('/dash/user/{id}/delete', [UsersController::class, 'deleteUser']);
+
+    // ------------- Routes des posts
     Route::get('/dash/posts', [PostsController::class, 'dashIndexPosts']);
+    Route::get('/dash/post/{id}', [PostsController::class, 'showPost']);
+    Route::delete('/dash/post/{id}/delete', [PostsController::class, 'deletePost']);
 });

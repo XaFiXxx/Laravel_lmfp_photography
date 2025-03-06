@@ -26,4 +26,11 @@ class UsersController extends Controller
         $user->update($request->all());
         return response()->json($user);
     }
+
+    public function deleteUser($id)
+    {
+        $user = user::find($id);
+        $user->delete($user->all());
+        return response()->json('Utilisateur bien supprimé');
+    }
 }

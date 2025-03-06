@@ -43,11 +43,23 @@ class PostsController extends Controller
         return response()->json($posts);
     }
 
+    // ------------------ DASHBOARD ------------------ //
+
     public function dashIndexPosts()
     {
         // Récupère les posts avec leurs relations (galery et commentaires avec utilisateur)
         $posts = Post::with('galery', 'comments.user', 'user')->get();
         return response()->json($posts);
+    }
+
+
+    public function deletePost($id)
+    {
+        //supprime un post
+        $post = Post::find($id);
+        // rajouté la gestion de suppression des images
+        $post->delete($post->all());
+        return response()->json('post bien supprimé');
     }
 
 }
