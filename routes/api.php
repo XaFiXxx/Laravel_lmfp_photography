@@ -27,6 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::get('/user/{id}', [UsersController::class, 'findUserById']);
+
     Route::post('/comments/{postId}', [CommentsController::class, 'createComment']);
     
     // Route pour la déconnexion
