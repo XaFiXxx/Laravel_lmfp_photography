@@ -46,7 +46,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Route pour la déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/dash/logout', [AuthController::class, 'dashLogout']);
 });
 
 
@@ -66,4 +65,14 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/dash/posts', [PostsController::class, 'dashIndexPosts']);
     Route::get('/dash/post/{id}', [PostsController::class, 'showPost']);
     Route::delete('/dash/post/{id}/delete', [PostsController::class, 'deletePost']);
+
+    // ------------- Routes des catégories
+    Route::get('/dash/categories', [CategoriesController::class, 'indexCategories']);
+    Route::get('/dash/category/{id}', [CategoriesController::class, 'showCategory']);   
+    Route::post('/dash/category/create', [CategoriesController::class, 'createCategory']);
+    Route::delete('/dash/category/{id}/delete', [CategoriesController::class, 'deleteCategory']);
+    Route::put('/dash/category/{id}/edit', [CategoriesController::class, 'updateCategory']);
+
+
+    Route::post('/dash/logout', [AuthController::class, 'dashLogout']);
 });
