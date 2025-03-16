@@ -18,6 +18,8 @@ Route::get('/posts/{id}', [PostsController::class, 'showPost']);
 Route::get('/galerie', [GalerieController::class, 'index']);
 Route::get('/random-post', [PostsController::class, 'getRandomPost']);
 Route::get('/last-three-posts', [PostsController::class, 'getLastThreePosts']);
+Route::get('/last-two-posts', [PostsController::class, 'getLastTwoPosts']);
+Route::get('/category/{id}', [PostsController::class, 'getPostsByCategory']);
 
 
 // Groupe de routes protégées par le middleware Sanctum

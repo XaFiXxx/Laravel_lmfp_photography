@@ -4,7 +4,7 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Comment;
 use App\Models\Galerie;
-use App\Models\categories;
+use App\Models\Categorie;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,9 +23,8 @@ class Post extends Model
         return $this->hasMany(Comment::class);
     }
 
-    public function categories()
-    {
-        return $this->hasMany(categories::class);
+    public function categories() {
+        return $this->belongsToMany(Categorie::class, 'posts_has_categories', 'post_id', 'category_id');
     }
 
     public function galery()
