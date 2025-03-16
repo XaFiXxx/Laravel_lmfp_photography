@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/user/{id}', [UsersController::class, 'findUserById']);
+    Route::put('/edit/user/{id}', [UsersController::class, 'updateUser']);
+    Route::put('/user/{id}/edit/password', [UsersController::class, 'updatePassword']);
 
     Route::post('/comments/{postId}', [CommentsController::class, 'createComment']);
     
