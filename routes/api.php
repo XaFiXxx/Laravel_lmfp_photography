@@ -12,15 +12,21 @@ use App\Http\Controllers\UsersController;
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Routes pour les posts 
 Route::get('/posts', [PostsController::class, 'indexPosts']);
-Route::get('/categories', [CategoriesController::class, 'indexCategories']);
 Route::get('/posts/{id}', [PostsController::class, 'showPost']);
-Route::get('/galerie', [GalerieController::class, 'index']);
 Route::get('/random-post', [PostsController::class, 'getRandomPost']);
 Route::get('/last-three-posts', [PostsController::class, 'getLastThreePosts']);
 Route::get('/last-two-posts', [PostsController::class, 'getLastTwoPosts']);
+
+// Routes pour les catégories
+Route::get('/categories', [CategoriesController::class, 'indexCategories']);
 Route::get('/category/{id}', [PostsController::class, 'getPostsByCategory']);
 Route::get('/categories/{id}', [CategoriesController::class, 'showCategory']);
+
+// Routes pour la galerie
+Route::get('/galerie', [GalerieController::class, 'index']);
 
 
 // Groupe de routes protégées par le middleware Sanctum
@@ -30,10 +36,12 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // Route pour les users
     Route::get('/user/{id}', [UsersController::class, 'findUserById']);
     Route::put('/edit/user/{id}', [UsersController::class, 'updateUser']);
     Route::put('/user/{id}/edit/password', [UsersController::class, 'updatePassword']);
 
+    // Route pour les commentaires
     Route::post('/comments/{postId}', [CommentsController::class, 'createComment']);
     
     // Route pour la déconnexion
