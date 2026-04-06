@@ -65,6 +65,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/dash/posts', [PostsController::class, 'dashIndexPosts']);
     Route::get('/dash/post/{id}', [PostsController::class, 'showPost']);
     Route::delete('/dash/post/{id}/delete', [PostsController::class, 'deletePost']);
+    Route::put('/dash/post/{id}/edit', [PostsController::class, 'updatePost']);
+    Route::post('/dash/post/create', [PostsController::class, 'createPost']);
 
     // ------------- Routes des catégories
     Route::get('/dash/categories', [CategoriesController::class, 'indexCategories']);
