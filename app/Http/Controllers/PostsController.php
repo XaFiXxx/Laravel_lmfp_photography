@@ -84,85 +84,198 @@ class PostsController extends Controller
 
     public function deletePost($id)
     {
-        //supprime un post
-        $post = Post::find($id);
-        // rajouté la gestion de suppression des images
-        $post->delete($post->all());
-        return response()->json('post bien supprimé');
+        try {
+            // Récupère le post ou 404 s'il n'existe pas
+            $post = Post::findOrFail($id);
+
+            // =========================
+            // SUPPRESSION IMAGE PRINCIPALE
+            // =========================
+            if ($post->image) {
+                $imagePath = public_path($post->image);
+
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+
+            // =========================
+            // SUPPRESSION DES IMAGES DE GALERIE
+            // =========================
+            foreach ($post->galery as $image) {
+                $filePath = public_path($image->picture);
+
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                $image->delete();
+            }
+
+            // =========================
+            // SUPPRESSION DES COMMENTAIRES
+            // =========================
+            foreach ($post->comments as $comment) {
+                $comment->delete();
+            }
+
+            // =========================
+            // DÉTACHER LES CATÉGORIES
+            // =========================
+            $post->categories()->detach();
+
+            // =========================
+            // SUPPRIMER LE POST
+            // =========================
+            $post->delete();
+
+            return response()->json([
+                'message' => 'Post bien supprimé'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la suppression du post',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updatePost(Request $request, $id)
     {
-        // 1) Validation
-        $validated = $request->validate([
-            'title'            => 'required|string|max:255',
-            'description'      => 'required|string',
-            'image'            => 'nullable|image|max:2048',
-            'categories'       => 'nullable|string',
-            'removed_gallery'  => 'nullable|array',
-            'removed_gallery.*'=> 'integer|exists:galery,id',
-            'gallery'          => 'nullable|array',
-            'gallery.*'        => 'image|max:2048',
+        // Validation des données envoyées par le front
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'categories' => 'nullable|string',
+            'removed_gallery' => 'nullable|array',
+            'removed_gallery.*' => 'integer',
         ]);
 
-        $post = Post::findOrFail($id);
-
-        // 2) Mise à jour des champs texte et image principale
-        $data = [
-            'title'       => $validated['title'],
-            'description' => $validated['description'],
-        ];
-        if ($request->hasFile('image')) {
-            $file     = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            // stocke dans storage/app/public/images/posts
-            $file->storeAs(
-                'images/posts',   // dossier relatif à storage/app/public
-                $filename,
-                'public'          // disque public
-            );
-            $data['image'] = '/storage/images/posts/' . $filename;
+        // Vérifie qu'un utilisateur est connecté
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Utilisateur non authentifié.',
+            ], 401);
         }
-        $post->update($data);
 
-        // 3) Synchronisation des catégories
-        if ($request->filled('categories')) {
-            $cats = json_decode($validated['categories'], true);
-            if (is_array($cats)) {
-                $post->categories()->sync($cats);
+        DB::beginTransaction();
+
+        try {
+            // Récupération du post
+            $post = Post::findOrFail($id);
+
+            // =========================
+            // MISE À JOUR TEXTE
+            // =========================
+            $post->title = $request->title;
+            $post->description = $request->description;
+
+            // =========================
+            // IMAGE PRINCIPALE
+            // =========================
+            if ($request->hasFile('image')) {
+                // Supprimer l'ancienne image si elle existe
+                if ($post->image) {
+                    $oldImagePath = public_path($post->image);
+
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+
+                $image = $request->file('image');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                $destinationPath = public_path('storage/img/posts/img');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $image->move($destinationPath, $imageName);
+
+                $post->image = 'storage/img/posts/img/' . $imageName;
             }
-        }
 
-        // 4) Suppression des images de galerie demandées
-        if (!empty($validated['removed_gallery'])) {
-            $toRemove = Galery::whereIn('id', $validated['removed_gallery'])->get();
-            foreach ($toRemove as $img) {
-                // supprime le fichier physique
-                Storage::disk('public')->delete('images/posts/' . basename($img->picture));
-                // supprime la ligne en base
-                $img->delete();
+            $post->save();
+
+            // =========================
+            // CATÉGORIES
+            // =========================
+            if ($request->filled('categories')) {
+                $categories = json_decode($request->categories, true);
+
+                if (is_array($categories)) {
+                    $post->categories()->sync($categories);
+                }
+            } else {
+                // Si aucune catégorie envoyée, on vide les relations
+                $post->categories()->sync([]);
             }
-        }
 
-        // 5) Ajout des nouvelles images de galerie
-        if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $file) {
-                $filename = time() . '_' . $file->getClientOriginalName();
-                // idem : disque public
-                $file->storeAs(
-                    'images/posts',
-                    $filename,
-                    'public'
-                );
-                $post->galery()->create([
-                    'picture' => '/storage/images/posts/' . $filename,
-                ]);
+            // =========================
+            // SUPPRESSION IMAGES GALERIE
+            // =========================
+            if ($request->has('removed_gallery')) {
+                $removedIds = $request->input('removed_gallery', []);
+
+                if (is_array($removedIds) && !empty($removedIds)) {
+                    $imagesToDelete = Galerie::where('post_id', $post->id)
+                        ->whereIn('id', $removedIds)
+                        ->get();
+
+                    foreach ($imagesToDelete as $image) {
+                        $filePath = public_path($image->picture);
+
+                        if (file_exists($filePath)) {
+                            unlink($filePath);
+                        }
+
+                        $image->delete();
+                    }
+                }
             }
-        }
 
-        // Rechargement des relations et réponse
-        $post->load('categories', 'galery', 'comments.user');
-        return response()->json($post);
+            // =========================
+            // AJOUT NOUVELLES IMAGES GALERIE
+            // =========================
+            if ($request->hasFile('gallery')) {
+                $galleryDestinationPath = public_path('storage/img/posts/gallery');
+
+                if (!file_exists($galleryDestinationPath)) {
+                    mkdir($galleryDestinationPath, 0755, true);
+                }
+
+                foreach ($request->file('gallery') as $galleryImage) {
+                    $galleryName = time() . '_' . uniqid() . '.' . $galleryImage->getClientOriginalExtension();
+
+                    $galleryImage->move($galleryDestinationPath, $galleryName);
+
+                    Galerie::create([
+                        'post_id' => $post->id,
+                        'picture' => 'storage/img/posts/gallery/' . $galleryName,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Post mis à jour avec succès.',
+                'post' => $post->load('categories', 'galery'),
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour du post.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function createPost(Request $request)
