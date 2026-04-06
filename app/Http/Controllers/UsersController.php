@@ -24,9 +24,74 @@ class UsersController extends Controller
 
     public function updateUser(Request $request, $id)
     {
-        $user = User::find($id);
-        $user->update($request->all());
-        return response()->json($user);
+        $user = User::findOrFail($id);
+
+        // =========================
+        // VALIDATION
+        // =========================
+        $request->validate([
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'birthday' => 'nullable|date',
+            'role' => 'nullable|string|max:255',
+            'status' => 'nullable|string|max:255',
+            'isAdmin' => 'nullable|boolean',
+            'avatar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        try {
+
+            // =========================
+            // UPDATE CHAMPS
+            // =========================
+            $user->firstname = $request->firstname;
+            $user->lastname = $request->lastname;
+            $user->email = $request->email;
+            $user->birthday = $request->birthday;
+            $user->role = $request->role;
+            $user->status = $request->status;
+
+            // IMPORTANT : sécuriser admin
+            $user->isAdmin = $request->isAdmin ? 1 : 0;
+
+            // =========================
+            // GESTION AVATAR
+            // =========================
+            if ($request->hasFile('avatar')) {
+
+                // Supprimer ancien avatar
+                if ($user->avatar) {
+                    $oldPath = public_path($user->avatar);
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
+                }
+
+                $avatar = $request->file('avatar');
+
+                $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+
+                $destinationPath = public_path('storage/img/users');
+
+                $avatar->move($destinationPath, $avatarName);
+
+                $user->avatar = 'storage/img/users/' . $avatarName;
+            }
+
+            $user->save();
+
+            return response()->json([
+                'message' => 'Utilisateur mis à jour avec succès',
+                'user' => $user
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function deleteUser($id)
