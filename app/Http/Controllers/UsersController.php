@@ -16,6 +16,61 @@ class UsersController extends Controller
         return  response()->json($users);
     }
 
+    public function updateUser(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'birthday' => 'nullable|date',
+            'avatar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        try {
+            $user->firstname = $request->firstname;
+            $user->lastname = $request->lastname;
+            $user->email = $request->email;
+            $user->birthday = $request->birthday;
+
+            if ($request->hasFile('avatar')) {
+                if ($user->avatar) {
+                    $oldPath = public_path($user->avatar);
+
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
+                }
+
+                $avatar = $request->file('avatar');
+                $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+                $destinationPath = public_path('storage/img/users');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $avatar->move($destinationPath, $avatarName);
+
+                $user->avatar = 'storage/img/users/' . $avatarName;
+            }
+
+            $user->save();
+
+            return response()->json([
+                'message' => 'Profil mis à jour avec succès',
+                'user' => $user
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour du profil',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function findUserById($id)
     {
         $user = User::find($id);
@@ -77,7 +132,7 @@ class UsersController extends Controller
         }
     }
 
-    public function updateUser(Request $request, $id)
+    public function updateUserDash(Request $request, $id)
     {
         $user = User::findOrFail($id);
 

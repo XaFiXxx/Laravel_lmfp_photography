@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route pour les users
     Route::get('/user/{id}', [UsersController::class, 'findUserById']);
-    Route::put('/edit/user/{id}', [UsersController::class, 'updateUser']);
+    Route::post('/edit/user/{id}', [UsersController::class, 'updateUser']);
     Route::put('/user/{id}/edit/password', [UsersController::class, 'updatePassword']);
 
     // Route pour les commentaires
@@ -66,7 +66,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/dash/users', [UsersController::class, 'index']);
     Route::post('/dash/user/create', [UsersController::class, 'createUser']);
     Route::get('/dash/user/{id}', [UsersController::class, 'findUserById']);
-    Route::post('/dash/user/{id}', [UsersController::class, 'updateUser']);
+    Route::post('/dash/user/{id}', [UsersController::class, 'updateUserDash']);
     Route::delete('/dash/user/{id}/delete', [UsersController::class, 'deleteUser']);
 
     // ------------- Routes des posts
