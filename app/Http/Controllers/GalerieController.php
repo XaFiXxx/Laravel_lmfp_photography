@@ -7,13 +7,12 @@ use Illuminate\Http\Request;
 
 class GalerieController extends Controller
 {
-    public function index(){
-        $galerie = Galerie::all();
+    public function index()
+    {
+        $galerie = Galerie::with('post')->get();
 
         return response()->json($galerie);
     }
-
-
 
      // ------------------ DASHBOARD ------------------ //
 
