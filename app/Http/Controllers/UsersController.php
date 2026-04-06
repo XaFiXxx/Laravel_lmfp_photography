@@ -248,27 +248,49 @@ class UsersController extends Controller
         }
     }
 
-    public function updatePassword(Request $request, $id)
+    public function updatePassword(Request $request)
     {
-        // Valider les données envoyées
-        $request->validate([
-            'oldPassword' => 'required',
-            'password' => 'required|min:8|confirmed',
-        ]);
+        $user = auth()->user();
 
-        // Récupérer l'utilisateur, ou retourner une erreur si non trouvé
-        $user = User::findOrFail($id);
-
-        // Vérifier que l'ancien mot de passe fourni correspond au mot de passe actuel
-        if (!Hash::check($request->oldPassword, $user->password)) {
-            return response()->json(['error' => 'Ancien mot de passe incorrect'], 400);
+        if (!$user) {
+            return response()->json([
+                'message' => 'Utilisateur non authentifié.'
+            ], 401);
         }
 
-        // Mettre à jour le mot de passe en le hachant
-        $user->password = Hash::make($request->password);
-        $user->save();
+        $request->validate([
+            'oldPassword' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
 
-        return response()->json(['message' => 'Mot de passe mis à jour avec succès'], 200);
+        try {
+            // Vérifie l'ancien mot de passe
+            if (!Hash::check($request->oldPassword, $user->password)) {
+                return response()->json([
+                    'message' => 'Ancien mot de passe incorrect.'
+                ], 400);
+            }
+
+            // Empêche de remettre exactement le même mot de passe
+            if (Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'message' => 'Le nouveau mot de passe doit être différent de l’ancien.'
+                ], 400);
+            }
+
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return response()->json([
+                'message' => 'Mot de passe mis à jour avec succès.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la modification du mot de passe.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
 }
