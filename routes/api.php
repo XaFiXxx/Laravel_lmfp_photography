@@ -44,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route pour les commentaires
     Route::post('/comments/{postId}', [CommentsController::class, 'createComment']);
+    Route::put('/comment/{id}/edit', [CommentsController::class, 'updateComment']);
+    Route::delete('/comment/{id}/delete', [CommentsController::class, 'deleteComment']);
     
     // Route pour la déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
