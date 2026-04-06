@@ -22,6 +22,61 @@ class UsersController extends Controller
         return response()->json($user);
     }
 
+    public function createUser(Request $request)
+    {
+        $request->validate([
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6',
+            'birthday' => 'nullable|date',
+            'role' => 'nullable|string|max:255',
+            'status' => 'nullable|string|max:255',
+            'isAdmin' => 'nullable|boolean',
+            'avatar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        try {
+            $user = new User();
+            $user->firstname = $request->firstname;
+            $user->lastname = $request->lastname;
+            $user->email = $request->email;
+            $user->password = Hash::make($request->password);
+            $user->birthday = $request->birthday;
+            $user->role = $request->role;
+            $user->status = $request->status;
+            $user->isAdmin = $request->isAdmin ? 1 : 0;
+
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+
+                $destinationPath = public_path('storage/images/users');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $avatar->move($destinationPath, $avatarName);
+
+                $user->avatar = 'storage/images/users/' . $avatarName;
+            }
+
+            $user->save();
+
+            return response()->json([
+                'message' => 'Utilisateur créé avec succès',
+                'user' => $user
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'utilisateur',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function updateUser(Request $request, $id)
     {
         $user = User::findOrFail($id);

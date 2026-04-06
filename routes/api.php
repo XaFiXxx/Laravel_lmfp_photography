@@ -62,6 +62,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
    // ------------- Routes des users
     Route::get('/dash/users', [UsersController::class, 'index']);
+    Route::post('/dash/user/create', [UsersController::class, 'createUser']);
     Route::get('/dash/user/{id}', [UsersController::class, 'findUserById']);
     Route::post('/dash/user/{id}', [UsersController::class, 'updateUser']);
     Route::delete('/dash/user/{id}/delete', [UsersController::class, 'deleteUser']);
