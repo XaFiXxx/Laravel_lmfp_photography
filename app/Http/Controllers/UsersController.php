@@ -51,7 +51,7 @@ class UsersController extends Controller
                 $avatar = $request->file('avatar');
                 $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
 
-                $destinationPath = public_path('storage/images/users');
+                $destinationPath = public_path('storage/img/users');
 
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0755, true);
@@ -59,7 +59,7 @@ class UsersController extends Controller
 
                 $avatar->move($destinationPath, $avatarName);
 
-                $user->avatar = 'storage/images/users/' . $avatarName;
+                $user->avatar = 'storage/img/users/' . $avatarName;
             }
 
             $user->save();
@@ -151,9 +151,46 @@ class UsersController extends Controller
 
     public function deleteUser($id)
     {
-        $user = user::find($id);
-        $user->delete($user->all());
-        return response()->json('Utilisateur bien supprimé');
+        $user = User::findOrFail($id);
+
+        try {
+
+            if (auth()->id() === $user->id) {
+                return response()->json([
+                    'message' => 'Tu ne peux pas supprimer ton propre compte.'
+                ], 403);
+            }
+
+            // =========================
+            // SUPPRIMER COMMENTAIRES
+            // =========================
+            $user->comments()->delete();
+
+            // =========================
+            // SUPPRIMER AVATAR
+            // =========================
+            if ($user->avatar) {
+                $avatarPath = public_path($user->avatar);
+                if (file_exists($avatarPath)) {
+                    unlink($avatarPath);
+                }
+            }
+
+            // =========================
+            // SUPPRIMER USER
+            // =========================
+            $user->delete();
+
+            return response()->json([
+                'message' => 'Utilisateur supprimé avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la suppression',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updatePassword(Request $request, $id)
