@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\GalerieController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\StatsController;
 
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
@@ -54,6 +55,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/dash/login', [AuthController::class, 'dashLogin']);
 // Groupe de routes protégées par le middleware Sanctum et admin
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+
+   // ------------- Routes des stats
+
+    Route::get('/dash/stats', [StatsController::class, 'stats']);
 
    // ------------- Routes des users
     Route::get('/dash/users', [UsersController::class, 'index']);
