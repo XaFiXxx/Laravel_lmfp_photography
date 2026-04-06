@@ -33,9 +33,7 @@ Route::get('/galerie', [GalerieController::class, 'index']);
 // Groupe de routes protégées par le middleware Sanctum
 Route::middleware('auth:sanctum')->group(function () {
     // Route pour récupérer l'utilisateur authentifié
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/user', [UsersController::class, 'me']);
 
     // Route pour les users
     Route::get('/user/{id}', [UsersController::class, 'findUserById']);

@@ -73,7 +73,10 @@ class UsersController extends Controller
 
     public function findUserById($id)
     {
-        $user = User::find($id);
+        $user = User::with('comments')
+                    ->withCount('comments')
+                    ->findOrFail($id);
+
         return response()->json($user);
     }
 
@@ -291,6 +294,15 @@ class UsersController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function me(Request $request)
+    {
+        $user = User::with(['comments.post'])
+                    ->withCount('comments')
+                    ->find($request->user()->id);
+
+        return response()->json($user);
     }
 
 }
