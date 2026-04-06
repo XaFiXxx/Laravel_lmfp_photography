@@ -70,6 +70,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
     // ------------- Routes de la gallerie 
     Route::get('/dash/gallery', [GalerieController::class, 'indexDash']);
+    Route::delete('/dash/gallery/{id}', [GalerieController::class, 'delete']);
 
     // ------------- Routes des catégories
     Route::get('/dash/categories', [CategoriesController::class, 'indexCategories']);

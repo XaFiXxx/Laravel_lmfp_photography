@@ -22,4 +22,38 @@ class GalerieController extends Controller
 
         return response()->json($galerie);
     }
+
+    public function delete($id)
+    {
+        try {
+            // Récupérer l'image galerie
+            $image = Galerie::findOrFail($id);
+
+            // =========================
+            // SUPPRESSION FICHIER
+            // =========================
+            if ($image->picture) {
+                $filePath = public_path($image->picture);
+
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+
+            // =========================
+            // SUPPRESSION DB
+            // =========================
+            $image->delete();
+
+            return response()->json([
+                'message' => 'Image supprimée avec succès'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la suppression',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
