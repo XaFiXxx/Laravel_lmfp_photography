@@ -12,4 +12,14 @@ class GalerieController extends Controller
 
         return response()->json($galerie);
     }
+
+
+
+     // ------------------ DASHBOARD ------------------ //
+
+     public function indexDash(){
+        $galerie = Galerie::with('post')->get();
+
+        return response()->json($galerie);
+    }
 }
