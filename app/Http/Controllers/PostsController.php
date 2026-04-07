@@ -17,7 +17,7 @@ class PostsController extends Controller
     // Affiche la liste des posts
     public function indexPosts()
     {
-        $posts = Post::all();
+        $posts = Post::with('categories')->get();
         return response()->json($posts);
     }
 
@@ -147,8 +147,8 @@ class PostsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
-            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
+            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
             'categories' => 'nullable|string',
             'removed_gallery' => 'nullable|array',
             'removed_gallery.*' => 'integer',
@@ -284,8 +284,8 @@ class PostsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
-            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
+            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
             'categories' => 'nullable|string',
         ]);
 

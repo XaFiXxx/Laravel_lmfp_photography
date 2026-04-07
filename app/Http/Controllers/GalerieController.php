@@ -9,7 +9,7 @@ class GalerieController extends Controller
 {
     public function index()
     {
-        $galerie = Galerie::with('post')->get();
+        $galerie = Galerie::with('post.categories')->get();
 
         return response()->json($galerie);
     }
