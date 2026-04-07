@@ -30,16 +30,11 @@ class AuthController extends Controller
             'role'      => $validatedData['role'],
         ]);
 
-        // 🔥 AJOUT ICI
         $user->sendEmailVerificationNotification();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
-            'message'    => 'Inscription réussie!',
-            'user'       => $user,
-            'auth_token' => $token,
-            'token_type' => 'Bearer',
+            'message' => 'Inscription réussie. Vérifiez votre email pour activer votre compte.',
+            'user'    => $user,
         ], 201);
     }
 
@@ -49,10 +44,21 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (!auth()->attempt($credentials)) {
-            return response()->json(['message' => 'Identifiants invalides.'], 401);
+            return response()->json([
+                'message' => 'Identifiants invalides.'
+            ], 401);
         }
 
         $user = auth()->user();
+
+        if (! $user->hasVerifiedEmail()) {
+            auth()->logout();
+
+            return response()->json([
+                'message' => 'Votre adresse email n’a pas encore été vérifiée.'
+            ], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -78,14 +84,27 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (!auth()->attempt($credentials)) {
-            return response()->json(['message' => 'Identifiants invalides.'], 401);
+            return response()->json([
+                'message' => 'Identifiants invalides.'
+            ], 401);
         }
 
         $user = auth()->user();
 
-        // Vérifier si l'utilisateur n'est pas admin en fonction de la colonne isAdmin (1 = admin)
+        if (! $user->hasVerifiedEmail()) {
+            auth()->logout();
+
+            return response()->json([
+                'message' => 'Votre adresse email n’a pas encore été vérifiée.'
+            ], 403);
+        }
+
         if ($user->isAdmin != 1) {
-            return response()->json(['message' => 'Accès non autorisé.'], 403);
+            auth()->logout();
+
+            return response()->json([
+                'message' => 'Accès non autorisé.'
+            ], 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
