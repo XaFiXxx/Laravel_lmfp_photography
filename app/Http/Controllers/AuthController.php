@@ -12,7 +12,6 @@ class AuthController extends Controller
     // Inscription avec création de token
     public function register(Request $request)
     {
-        // Validation des données directement dans le contrôleur
         $validatedData = $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname'  => 'required|string|max:255',
@@ -22,7 +21,6 @@ class AuthController extends Controller
             'role'      => 'required|string|in:visiteur,mannequin,photographe,organisateur',
         ]);
 
-        // Création de l'utilisateur avec les données validées
         $user = User::create([
             'firstname' => $validatedData['firstname'],
             'lastname'  => $validatedData['lastname'],
@@ -32,7 +30,9 @@ class AuthController extends Controller
             'role'      => $validatedData['role'],
         ]);
 
-        // Création du token
+        // 🔥 AJOUT ICI
+        $user->sendEmailVerificationNotification();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
