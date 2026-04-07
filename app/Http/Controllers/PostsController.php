@@ -298,47 +298,36 @@ class PostsController extends Controller
             $post->title = $request->title;
             $post->description = $request->description;
 
-            // =========================
             // IMAGE PRINCIPALE
-            // =========================
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
 
-                // Nom unique pour éviter les doublons
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
-                // Dossier de destination réel
-                $destinationPath = storage_path('app/public/img/posts/img');
+                $destinationPath = public_path('storage/img/posts/img');
 
-                // Déplacement physique du fichier
                 $image->move($destinationPath, $imageName);
 
-                // Chemin enregistré en base
                 $post->image = 'storage/img/posts/img/' . $imageName;
             }
 
             $post->save();
 
-            // =========================
             // CATÉGORIES
-            // =========================
             if ($request->filled('categories')) {
                 $categories = json_decode($request->categories, true);
 
-                // On vérifie que c'est bien un tableau
                 if (is_array($categories) && !empty($categories)) {
                     $post->categories()->sync($categories);
                 }
             }
 
-            // =========================
             // GALERIE
-            // =========================
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $galleryImage) {
                     $galleryName = time() . '_' . uniqid() . '.' . $galleryImage->getClientOriginalExtension();
 
-                    $galleryDestinationPath = storage_path('app/public/img/posts/gallery');
+                    $galleryDestinationPath = public_path('storage/img/posts/gallery');
 
                     $galleryImage->move($galleryDestinationPath, $galleryName);
 
@@ -365,93 +354,6 @@ class PostsController extends Controller
             ], 500);
         }
     }
-
-    // public function createPost(Request $request)
-    // {
-    //     $request->validate([
-    //         'title' => 'required|string|max:255',
-    //         'description' => 'required|string',
-    //         'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //         'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //         'categories' => 'nullable|string',
-    //     ]);
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $post = new Post();
-    //         $post->user_id = Auth::id();
-    //         $post->title = $request->title;
-    //         $post->description = $request->description;
-
-    //         // IMAGE PRINCIPALE
-    //         if ($request->hasFile('image')) {
-    //             $image = $request->file('image');
-
-    //             if ($image->isValid()) {
-    //                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-
-    //                 $destinationPath = storage_path('app/public/img/posts/img');
-
-    //                 if (!file_exists($destinationPath)) {
-    //                     mkdir($destinationPath, 0755, true);
-    //                 }
-
-    //                 $image->move($destinationPath, $imageName);
-
-    //                 $post->image = 'storage/img/posts/img/' . $imageName;
-    //             }
-    //         }
-
-    //         $post->save();
-
-    //         // CATÉGORIES
-    //         if ($request->filled('categories')) {
-    //             $categories = json_decode($request->categories, true);
-
-    //             if (is_array($categories) && !empty($categories)) {
-    //                 $post->categories()->sync($categories);
-    //             }
-    //         }
-
-    //         // GALERIE
-    //         if ($request->hasFile('gallery')) {
-    //             foreach ($request->file('gallery') as $galleryImage) {
-    //                 if ($galleryImage->isValid()) {
-    //                     $galleryName = time() . '_' . uniqid() . '.' . $galleryImage->getClientOriginalExtension();
-
-    //                     $galleryDestinationPath = storage_path('app/public/img/posts/gallery');
-
-    //                     if (!file_exists($galleryDestinationPath)) {
-    //                         mkdir($galleryDestinationPath, 0755, true);
-    //                     }
-
-    //                     $galleryImage->move($galleryDestinationPath, $galleryName);
-
-    //                     Galerie::create([
-    //                         'post_id' => $post->id,
-    //                         'picture' => 'storage/img/posts/gallery/' . $galleryName,
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'message' => 'Post créé avec succès.',
-    //             'post' => $post->load('categories', 'galery'),
-    //         ], 201);
-
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-
-    //         return response()->json([
-    //             'message' => 'Erreur lors de la création du post.',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
 
 
 }
