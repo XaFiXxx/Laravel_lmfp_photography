@@ -147,8 +147,8 @@ class PostsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
+            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
             'categories' => 'nullable|string',
             'removed_gallery' => 'nullable|array',
             'removed_gallery.*' => 'integer',
@@ -284,8 +284,8 @@ class PostsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
+            'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
             'categories' => 'nullable|string',
         ]);
 
