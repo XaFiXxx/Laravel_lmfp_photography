@@ -76,6 +76,27 @@ class AuthController extends Controller
         return response()->json(['message' => 'Déconnexion réussie!'], 200);
     }
 
+    public function resendVerificationEmail(Request $request)
+    {
+        $validatedData = $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $validatedData['email'])->first();
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Cette adresse email est déjà vérifiée.'
+            ], 400);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json([
+            'message' => 'Email de confirmation renvoyé avec succès.'
+        ], 200);
+    }
+
 
     // ------------ DASHBOARD ------------ //
 

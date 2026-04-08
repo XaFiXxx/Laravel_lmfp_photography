@@ -13,6 +13,7 @@ use App\Http\Controllers\StatsController;
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/resend-verification-email', [AuthController::class, 'resendVerificationEmail'])->middleware('throttle:3,1');
 
 // Routes pour les posts 
 Route::get('/posts', [PostsController::class, 'indexPosts']);
