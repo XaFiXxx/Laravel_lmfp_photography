@@ -15,6 +15,8 @@ use App\Http\Controllers\ContactController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-verification-email', [AuthController::class, 'resendVerificationEmail'])->middleware('throttle:3,1');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Routes pour les posts 
 Route::get('/posts', [PostsController::class, 'indexPosts']);

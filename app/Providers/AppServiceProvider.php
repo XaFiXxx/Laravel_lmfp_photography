@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\Router;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,5 +22,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(Router $router): void
     {
         $router->aliasMiddleware('admin', \App\Http\Middleware\AdminMiddleware::class);
+
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return env('FRONTEND_URL')
+                . '/reset-password?token='
+                . $token
+                . '&email='
+                . urlencode($user->email);
+        });
     }
 }

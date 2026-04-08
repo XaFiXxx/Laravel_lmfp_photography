@@ -14,10 +14,12 @@ use App\Models\Categorie;
 
 class PostsController extends Controller
 {
-    // Affiche la liste des posts
     public function indexPosts()
     {
-        $posts = Post::with('categories')->get();
+        $posts = Post::with('categories')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return response()->json($posts);
     }
 
