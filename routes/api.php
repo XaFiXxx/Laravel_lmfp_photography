@@ -9,6 +9,7 @@ use App\Http\Controllers\GalerieController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\StatsController;
+use App\Http\Controllers\ContactController;
 
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
@@ -45,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comments/{postId}', [CommentsController::class, 'createComment']);
     Route::put('/comment/{id}/edit', [CommentsController::class, 'updateComment']);
     Route::delete('/comment/{id}/delete', [CommentsController::class, 'deleteComment']);
+
+    // Route pour le formulaire de contact 
+    Route::post('/contact', [ContactController::class, 'send']);
     
     // Route pour la déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);

@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    // Inscription avec création de token
     public function register(Request $request)
     {
         $validatedData = $request->validate([
