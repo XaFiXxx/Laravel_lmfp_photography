@@ -18,8 +18,11 @@ class GalerieController extends Controller
 
      // ------------------ DASHBOARD ------------------ //
 
-     public function indexDash(){
-        $galerie = Galerie::with('post')->get();
+     public function indexDash()
+    {
+        $galerie = Galerie::with('post')
+            ->latest()
+            ->paginate(12);
 
         return response()->json($galerie);
     }

@@ -69,4 +69,33 @@ class CommentsController extends Controller
             'message' => 'Commentaire supprimé avec succès.',
         ], 200);
     }
+
+
+    // ------------------ DASHBOARD ------------------ //
+
+
+    public function indexComments()
+    {
+        $comments = Comment::with(['user', 'post'])->latest()->paginate(12);
+
+        return response()->json($comments);
+    }
+
+    public function deleteDashComment($id)
+    {
+        $comment = Comment::find($id);
+
+        if (!$comment) {
+            return response()->json([
+                'message' => 'Commentaire introuvable.'
+            ], 404);
+        }
+
+        $comment->delete();
+
+        return response()->json([
+            'message' => 'Commentaire supprimé avec succès.'
+        ], 200);
+    }
+
 }

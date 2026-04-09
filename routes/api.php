@@ -81,6 +81,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::put('/dash/post/{id}/edit', [PostsController::class, 'updatePost']);
     Route::post('/dash/post/create', [PostsController::class, 'createPost']);
 
+    // ------------- Routes des posts
+    Route::get('/dash/comments', [CommentsController::class, 'indexComments']);
+    Route::delete('/dash/comments/{id}', [CommentsController::class, 'deleteDashComment']);
+
     // ------------- Routes de la gallerie 
     Route::get('/dash/gallery', [GalerieController::class, 'indexDash']);
     Route::delete('/dash/gallery/{id}', [GalerieController::class, 'delete']);
