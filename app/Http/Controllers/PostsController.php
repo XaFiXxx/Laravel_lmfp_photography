@@ -14,11 +14,17 @@ use App\Models\Categorie;
 
 class PostsController extends Controller
 {
-    public function indexPosts()
+    public function indexPosts(Request $request)
     {
-        $posts = Post::with('categories')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Post::with('categories')->latest();
+
+        if ($request->filled('category_id')) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category_id);
+            });
+        }
+
+        $posts = $query->paginate(6);
 
         return response()->json($posts);
     }

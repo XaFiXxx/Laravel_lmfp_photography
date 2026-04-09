@@ -9,7 +9,9 @@ class GalerieController extends Controller
 {
     public function index()
     {
-        $galerie = Galerie::with('post.categories')->orderBy('created_at', 'desc')->get();
+        $galerie = Galerie::with('post.categories')
+            ->latest()
+            ->paginate(12);
 
         return response()->json($galerie);
     }
