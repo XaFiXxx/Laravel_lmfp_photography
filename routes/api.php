@@ -20,7 +20,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Routes pour les posts 
 Route::get('/posts', [PostsController::class, 'indexPosts']);
-Route::get('/posts/{id}', [PostsController::class, 'showPost']);
+Route::get('/posts/{slug}', [PostsController::class, 'showPost']);
 Route::get('/random-post', [PostsController::class, 'getRandomPost']);
 Route::get('/last-three-posts', [PostsController::class, 'getLastThreePosts']);
 Route::get('/last-two-posts', [PostsController::class, 'getLastTwoPosts']);

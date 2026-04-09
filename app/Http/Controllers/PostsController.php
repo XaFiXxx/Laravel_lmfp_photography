@@ -29,7 +29,7 @@ class PostsController extends Controller
         return response()->json($posts);
     }
 
-    public function showPost($id)
+    public function showPost($slug)
     {
         $post = Post::with([
             'galery',
@@ -38,7 +38,8 @@ class PostsController extends Controller
                 $query->orderBy('created_at', 'desc');
             },
             'comments.user'
-        ])->findOrFail($id);
+        ])->where('slug', $slug)->firstOrFail();
+
         return response()->json($post);
     }
 
