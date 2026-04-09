@@ -7,10 +7,22 @@ use Illuminate\Http\Request;
 
 class GalerieController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $galerie = Galerie::with('post.categories')
-            ->latest()
+        $query = Galerie::with('post.categories');
+
+        // 🔥 FILTRE PAR CATÉGORIE
+        if ($request->filled('category_id')) {
+            $categoryId = (int) $request->category_id;
+
+            $query->whereHas('post.categories', function ($q) use ($categoryId) {
+                $q->where('categories.id', $categoryId);
+            });
+        }
+
+        $galerie = $query
+            ->orderByDesc('created_at') // équivalent de latest()
+            ->orderByDesc('id') // sécurité si même timestamp
             ->paginate(12);
 
         return response()->json($galerie);
