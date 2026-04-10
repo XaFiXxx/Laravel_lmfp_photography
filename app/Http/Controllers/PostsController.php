@@ -6,6 +6,7 @@ use App\Models\Post; // Importation du modèle avec le nom correct (singulier)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 use App\Models\Comment;
 use App\Models\Galerie;
@@ -157,9 +158,8 @@ class PostsController extends Controller
         }
     }
 
-    public function updatePost(Request $request, $id)
+    public function updatePost(Request $request, $slug)
     {
-        // Validation des données envoyées par le front
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -170,7 +170,6 @@ class PostsController extends Controller
             'removed_gallery.*' => 'integer',
         ]);
 
-        // Vérifie qu'un utilisateur est connecté
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Utilisateur non authentifié.',
@@ -180,20 +179,29 @@ class PostsController extends Controller
         DB::beginTransaction();
 
         try {
-            // Récupération du post
-            $post = Post::findOrFail($id);
+            $post = Post::where('slug', $slug)->firstOrFail();
 
-            // =========================
-            // MISE À JOUR TEXTE
-            // =========================
+            // Génération du slug unique
+            $baseSlug = Str::slug($request->title);
+            $newSlug = $baseSlug;
+            $counter = 1;
+
+            while (
+                Post::where('slug', $newSlug)
+                    ->where('id', '!=', $post->id)
+                    ->exists()
+            ) {
+                $newSlug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+
+            // Mise à jour texte
             $post->title = $request->title;
+            $post->slug = $newSlug;
             $post->description = $request->description;
 
-            // =========================
-            // IMAGE PRINCIPALE
-            // =========================
+            // Image principale
             if ($request->hasFile('image')) {
-                // Supprimer l'ancienne image si elle existe
                 if ($post->image) {
                     $oldImagePath = public_path($post->image);
 
@@ -218,9 +226,7 @@ class PostsController extends Controller
 
             $post->save();
 
-            // =========================
-            // CATÉGORIES
-            // =========================
+            // Catégories
             if ($request->filled('categories')) {
                 $categories = json_decode($request->categories, true);
 
@@ -228,13 +234,10 @@ class PostsController extends Controller
                     $post->categories()->sync($categories);
                 }
             } else {
-                // Si aucune catégorie envoyée, on vide les relations
                 $post->categories()->sync([]);
             }
 
-            // =========================
-            // SUPPRESSION IMAGES GALERIE
-            // =========================
+            // Suppression images galerie
             if ($request->has('removed_gallery')) {
                 $removedIds = $request->input('removed_gallery', []);
 
@@ -255,9 +258,7 @@ class PostsController extends Controller
                 }
             }
 
-            // =========================
-            // AJOUT NOUVELLES IMAGES GALERIE
-            // =========================
+            // Ajout nouvelles images galerie
             if ($request->hasFile('gallery')) {
                 $galleryDestinationPath = public_path('storage/img/posts/gallery');
 

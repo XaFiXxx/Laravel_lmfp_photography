@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class Post extends Model
 {
     protected $table = 'posts';
-    protected $fillable = ['title', 'content', 'description', 'user_id'];
+    protected $fillable = ['title', 'content', 'description', 'user_id', 'slug'];
 
     protected static function boot()
     {
