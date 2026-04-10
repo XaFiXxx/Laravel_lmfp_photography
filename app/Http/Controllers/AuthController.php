@@ -14,22 +14,28 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        // Version des CGU (à centraliser si besoin)
+        $termsVersion = '1.0';
+
         $validatedData = $request->validate([
-            'firstname' => 'required|string|max:255',
-            'lastname'  => 'required|string|max:255',
-            'email'     => 'required|string|email|max:255|unique:users',
-            'birthday'  => 'required|date',
-            'password'  => 'required|string|min:8|confirmed',
-            'role'      => 'required|string|in:visiteur,mannequin,photographe,organisateur',
+            'firstname'       => 'required|string|max:255',
+            'lastname'        => 'required|string|max:255',
+            'email'           => 'required|string|email|max:255|unique:users',
+            'birthday'        => 'required|date',
+            'password'        => 'required|string|min:8|confirmed',
+            'role'            => 'required|string|in:visiteur,mannequin,photographe,organisateur',
+            'accepted_terms'  => 'accepted',
         ]);
 
         $user = User::create([
-            'firstname' => $validatedData['firstname'],
-            'lastname'  => $validatedData['lastname'],
-            'email'     => $validatedData['email'],
-            'birthday'  => $validatedData['birthday'],
-            'password'  => Hash::make($validatedData['password']),
-            'role'      => $validatedData['role'],
+            'firstname'          => $validatedData['firstname'],
+            'lastname'           => $validatedData['lastname'],
+            'email'              => $validatedData['email'],
+            'birthday'           => $validatedData['birthday'],
+            'password'           => Hash::make($validatedData['password']),
+            'role'               => $validatedData['role'],
+            'terms_accepted_at'  => now(),
+            'terms_version'      => $termsVersion,
         ]);
 
         $user->sendEmailVerificationNotification();
