@@ -84,14 +84,22 @@ class PostsController extends Controller
 
     // ------------------ DASHBOARD ------------------ //
 
-    public function dashIndexPosts()
+    public function dashIndexPosts(Request $request)
     {
+        $search = $request->query('search');
+
         $posts = Post::with([
                 'galery',
                 'categories',
                 'comments.user',
                 'user'
             ])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
             ->latest()
             ->paginate(12);
 

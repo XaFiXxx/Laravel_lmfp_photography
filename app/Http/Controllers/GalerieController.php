@@ -30,9 +30,22 @@ class GalerieController extends Controller
 
      // ------------------ DASHBOARD ------------------ //
 
-     public function indexDash()
+
+    public function indexDash(Request $request)
     {
+        $search = $request->query('search');
+
         $galerie = Galerie::with('post')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('post_id', 'like', "%{$search}%")
+                    ->orWhereHas('post', function ($postQuery) use ($search) {
+                        $postQuery->where('title', 'like', "%{$search}%")
+                                    ->orWhere('description', 'like', "%{$search}%");
+                    });
+                });
+            })
             ->latest()
             ->paginate(12);
 
