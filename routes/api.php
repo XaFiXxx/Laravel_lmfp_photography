@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\NewsletterController;
 
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
@@ -17,6 +18,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-verification-email', [AuthController::class, 'resendVerificationEmail'])->middleware('throttle:3,1');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+// Routes publiques NewsLetter
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']);
+Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe']);
 
 // Routes pour les posts 
 Route::get('/posts', [PostsController::class, 'indexPosts']);
@@ -95,6 +100,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/dash/category/create', [CategoriesController::class, 'createCategory']);
     Route::delete('/dash/category/{id}/delete', [CategoriesController::class, 'deleteCategory']);
     Route::put('/dash/category/{id}/edit', [CategoriesController::class, 'updateCategory']);
+
+    // ------------- Routes des catégories
+    Route::get('/dash/newsletter', [NewsletterController::class, 'index']);
+    Route::post('/dash/newsletter/send', [NewsletterController::class, 'send']);
 
 
     Route::post('/dash/logout', [AuthController::class, 'dashLogout']);
