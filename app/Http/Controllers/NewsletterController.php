@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mail\NewsletterMail;
+use App\Mail\SharePostMail;
+use App\Models\Post;
 use App\Models\Subscriber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -23,7 +25,6 @@ class NewsletterController extends Controller
 
         $subscriber = Subscriber::where('email', $email)->first();
 
-        // Nouveau subscriber
         if (!$subscriber) {
             Subscriber::create([
                 'email' => $email,
@@ -37,14 +38,12 @@ class NewsletterController extends Controller
             ], 201);
         }
 
-        // Déjà abonné
         if ($subscriber->is_active) {
             return response()->json([
                 'message' => 'Cet email est déjà abonné.'
             ], 200);
         }
 
-        // Réactivation
         $subscriber->update([
             'is_active' => true,
             'subscribed_at' => now(),
@@ -110,7 +109,7 @@ class NewsletterController extends Controller
     }
 
     // ========================
-    // SEND NEWSLETTER
+    // SEND FREE NEWSLETTER
     // ========================
     public function send(Request $request)
     {
@@ -141,6 +140,59 @@ class NewsletterController extends Controller
 
         return response()->json([
             'message' => 'Newsletter envoyée avec succès.'
+        ], 200);
+    }
+
+    // ========================
+    // SEND POST NEWSLETTER
+    // ========================
+    public function sendPost(Request $request)
+    {
+        $validatedData = $request->validate([
+            'post_id' => 'required|exists:posts,id',
+            'subject' => 'nullable|string|max:255',
+            'message' => 'nullable|string|max:10000',
+        ]);
+
+        $post = Post::findOrFail($validatedData['post_id']);
+
+        $subscribers = Subscriber::where('is_active', true)->get();
+
+        if ($subscribers->isEmpty()) {
+            return response()->json([
+                'message' => 'Aucun abonné actif pour recevoir cet envoi.'
+            ], 422);
+        }
+
+        $frontendUrl = rtrim(env('FRONTEND_URL', config('app.url')), '/');
+        $postUrl = $frontendUrl . '/posts/' . $post->slug;
+
+        $subject = !empty($validatedData['subject'])
+            ? $validatedData['subject']
+            : 'Nouveau post en ligne : ' . $post->title;
+
+        $message = !empty($validatedData['message'])
+            ? $validatedData['message']
+            : ($post->description ?: 'Un nouvel article est disponible sur le site.');
+
+        foreach ($subscribers as $subscriber) {
+            $unsubscribeUrl = config('app.url') . '/api/newsletter/unsubscribe/' . $subscriber->unsubscribe_token;
+
+            Mail::to($subscriber->email)->send(
+                new SharePostMail(
+                    $subject,
+                    $message,
+                    $post->title,
+                    $post->description,
+                    $postUrl,
+                    $post->image,
+                    $unsubscribeUrl
+                )
+            );
+        }
+
+        return response()->json([
+            'message' => 'Le mail de partage du post a bien été envoyé aux abonnés actifs.'
         ], 200);
     }
 }

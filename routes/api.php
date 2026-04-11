@@ -104,6 +104,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // ------------- Routes des catégories
     Route::get('/dash/newsletter', [NewsletterController::class, 'index']);
     Route::post('/dash/newsletter/send', [NewsletterController::class, 'send']);
+    Route::post('/dash/newsletter/send-post', [NewsletterController::class, 'sendPost']);
 
 
     Route::post('/dash/logout', [AuthController::class, 'dashLogout']);
