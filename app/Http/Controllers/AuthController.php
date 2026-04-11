@@ -9,34 +9,50 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Auth\Events\PasswordReset;
+use App\Models\Subscriber;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+   public function register(Request $request)
     {
-        // Version des CGU (à centraliser si besoin)
         $termsVersion = '1.0';
 
         $validatedData = $request->validate([
-            'firstname'       => 'required|string|max:255',
-            'lastname'        => 'required|string|max:255',
-            'email'           => 'required|string|email|max:255|unique:users',
-            'birthday'        => 'required|date',
-            'password'        => 'required|string|min:8|confirmed',
-            'role'            => 'required|string|in:visiteur,mannequin,photographe,organisateur',
-            'accepted_terms'  => 'accepted',
+            'firstname'             => 'required|string|max:255',
+            'lastname'              => 'required|string|max:255',
+            'email'                 => 'required|string|email|max:255|unique:users',
+            'birthday'              => 'required|date',
+            'password'              => 'required|string|min:8|confirmed',
+            'role'                  => 'required|string|in:visiteur,mannequin,photographe,organisateur',
+            'accepted_terms'        => 'accepted',
+            'subscribe_newsletter'  => 'nullable|boolean',
         ]);
 
         $user = User::create([
-            'firstname'          => $validatedData['firstname'],
-            'lastname'           => $validatedData['lastname'],
-            'email'              => $validatedData['email'],
-            'birthday'           => $validatedData['birthday'],
-            'password'           => Hash::make($validatedData['password']),
-            'role'               => $validatedData['role'],
-            'terms_accepted_at'  => now(),
-            'terms_version'      => $termsVersion,
+            'firstname'         => $validatedData['firstname'],
+            'lastname'          => $validatedData['lastname'],
+            'email'             => $validatedData['email'],
+            'birthday'          => $validatedData['birthday'],
+            'password'          => Hash::make($validatedData['password']),
+            'role'              => $validatedData['role'],
+            'terms_accepted_at' => now(),
+            'terms_version'     => $termsVersion,
         ]);
+
+        if ($request->boolean('subscribe_newsletter')) {
+            $subscriber = Subscriber::firstOrNew([
+                'email' => strtolower(trim($validatedData['email'])),
+            ]);
+
+            if (!$subscriber->exists) {
+                $subscriber->unsubscribe_token = Str::uuid();
+            }
+
+            $subscriber->is_active = true;
+            $subscriber->subscribed_at = now();
+            $subscriber->unsubscribed_at = null;
+            $subscriber->save();
+        }
 
         $user->sendEmailVerificationNotification();
 
