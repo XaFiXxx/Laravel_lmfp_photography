@@ -25,6 +25,7 @@ class UsersController extends Controller
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'birthday' => 'nullable|date',
+            'location' => 'required|string|max:255',
             'avatar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -33,6 +34,7 @@ class UsersController extends Controller
             $user->lastname = $request->lastname;
             $user->email = $request->email;
             $user->birthday = $request->birthday;
+            $user->location = $request->location;
 
             if ($request->hasFile('avatar')) {
                 if ($user->avatar) {
@@ -88,6 +90,7 @@ class UsersController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
             'birthday' => 'nullable|date',
+            'location' => 'required|string|max:255',
             'role' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:255',
             'isAdmin' => 'nullable|boolean',
@@ -101,6 +104,7 @@ class UsersController extends Controller
             $user->email = $request->email;
             $user->password = Hash::make($request->password);
             $user->birthday = $request->birthday;
+            $user->location = $request->location;
             $user->role = $request->role;
             $user->status = $request->status;
             $user->isAdmin = $request->isAdmin ? 1 : 0;
@@ -139,14 +143,12 @@ class UsersController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // =========================
-        // VALIDATION
-        // =========================
         $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'birthday' => 'nullable|date',
+            'location' => 'required|string|max:255',
             'role' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:255',
             'isAdmin' => 'nullable|boolean',
@@ -154,38 +156,31 @@ class UsersController extends Controller
         ]);
 
         try {
-
-            // =========================
-            // UPDATE CHAMPS
-            // =========================
             $user->firstname = $request->firstname;
             $user->lastname = $request->lastname;
             $user->email = $request->email;
             $user->birthday = $request->birthday;
+            $user->location = $request->location;
             $user->role = $request->role;
             $user->status = $request->status;
-
-            // IMPORTANT : sécuriser admin
             $user->isAdmin = $request->isAdmin ? 1 : 0;
 
-            // =========================
-            // GESTION AVATAR
-            // =========================
             if ($request->hasFile('avatar')) {
-
-                // Supprimer ancien avatar
                 if ($user->avatar) {
                     $oldPath = public_path($user->avatar);
+
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
                     }
                 }
 
                 $avatar = $request->file('avatar');
-
                 $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
-
                 $destinationPath = public_path('storage/img/users');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
                 $avatar->move($destinationPath, $avatarName);
 

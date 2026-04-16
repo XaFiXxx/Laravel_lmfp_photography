@@ -15,6 +15,8 @@ class ContactController extends Controller
             'email' => 'required|email|max:255',
             'subject' => 'required|string|max:255',
             'message' => 'required|string|max:5000',
+            'location' => 'required|string|max:100',
+            'social_link' => 'nullable|string|max:255'
         ]);
 
         // Adresse du client qui doit recevoir le message
@@ -25,7 +27,9 @@ class ContactController extends Controller
                 $validatedData['name'],
                 $validatedData['email'],
                 $validatedData['subject'],
-                $validatedData['message']
+                $validatedData['message'],
+                $validatedData['location'],
+                $validatedData['social_link'] ?? null
             )
         );
 

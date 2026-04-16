@@ -22,44 +22,72 @@ class AuthController extends Controller
             'lastname'              => 'required|string|max:255',
             'email'                 => 'required|string|email|max:255|unique:users',
             'birthday'              => 'required|date',
+            'location'              => 'required|string|max:255',
             'password'              => 'required|string|min:8|confirmed',
             'role'                  => 'required|string|in:visiteur,mannequin,photographe,organisateur',
             'accepted_terms'        => 'accepted',
             'subscribe_newsletter'  => 'nullable|boolean',
+            'avatar'                => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $user = User::create([
-            'firstname'         => $validatedData['firstname'],
-            'lastname'          => $validatedData['lastname'],
-            'email'             => $validatedData['email'],
-            'birthday'          => $validatedData['birthday'],
-            'password'          => Hash::make($validatedData['password']),
-            'role'              => $validatedData['role'],
-            'terms_accepted_at' => now(),
-            'terms_version'     => $termsVersion,
-        ]);
+        try {
+            $avatarPath = null;
 
-        if ($request->boolean('subscribe_newsletter')) {
-            $subscriber = Subscriber::firstOrNew([
-                'email' => strtolower(trim($validatedData['email'])),
-            ]);
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+                $destinationPath = public_path('storage/img/users');
 
-            if (!$subscriber->exists) {
-                $subscriber->unsubscribe_token = Str::uuid();
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $avatar->move($destinationPath, $avatarName);
+
+                $avatarPath = 'storage/img/users/' . $avatarName;
             }
 
-            $subscriber->is_active = true;
-            $subscriber->subscribed_at = now();
-            $subscriber->unsubscribed_at = null;
-            $subscriber->save();
+            $user = User::create([
+                'firstname'         => $validatedData['firstname'],
+                'lastname'          => $validatedData['lastname'],
+                'email'             => $validatedData['email'],
+                'birthday'          => $validatedData['birthday'],
+                'location'          => $validatedData['location'],
+                'avatar'            => $avatarPath,
+                'password'          => Hash::make($validatedData['password']),
+                'role'              => $validatedData['role'],
+                'terms_accepted_at' => now(),
+                'terms_version'     => $termsVersion,
+            ]);
+
+            if ($request->boolean('subscribe_newsletter')) {
+                $subscriber = Subscriber::firstOrNew([
+                    'email' => strtolower(trim($validatedData['email'])),
+                ]);
+
+                if (!$subscriber->exists) {
+                    $subscriber->unsubscribe_token = Str::uuid();
+                }
+
+                $subscriber->is_active = true;
+                $subscriber->subscribed_at = now();
+                $subscriber->unsubscribed_at = null;
+                $subscriber->save();
+            }
+
+            $user->sendEmailVerificationNotification();
+
+            return response()->json([
+                'message' => 'Inscription réussie. Vérifiez votre email pour activer votre compte.',
+                'user'    => $user,
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Erreur lors de l'inscription.",
+                'error'   => $e->getMessage(),
+            ], 500);
         }
-
-        $user->sendEmailVerificationNotification();
-
-        return response()->json([
-            'message' => 'Inscription réussie. Vérifiez votre email pour activer votre compte.',
-            'user'    => $user,
-        ], 201);
     }
 
     // Connexion

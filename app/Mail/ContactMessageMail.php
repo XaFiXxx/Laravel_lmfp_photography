@@ -14,13 +14,17 @@ class ContactMessageMail extends Mailable
     public $email;
     public $subjectLine;
     public $messageContent;
+    public $location;
+    public $social_link;
 
-    public function __construct($name, $email, $subjectLine, $messageContent)
+    public function __construct($name, $email, $subjectLine, $messageContent, $location, $social_link)
     {
         $this->name = $name;
         $this->email = $email;
         $this->subjectLine = $subjectLine;
         $this->messageContent = $messageContent;
+        $this->location = $location;
+        $this->social_link = $social_link;
     }
 
     public function build()
