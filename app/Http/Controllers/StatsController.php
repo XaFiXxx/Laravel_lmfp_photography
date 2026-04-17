@@ -8,7 +8,6 @@ use App\Models\Galerie;
 use App\Models\Comment;
 use App\Models\Categorie;
 use App\Models\Subscriber;
-use Illuminate\Http\Request;
 
 class StatsController extends Controller
 {
@@ -20,11 +19,15 @@ class StatsController extends Controller
             ->get();
 
         $latestUsers = User::latest()
-            ->take(5)
+            ->take(4)
             ->get();
 
         $latestComments = Comment::with(['user', 'post'])
             ->latest()
+            ->take(5)
+            ->get();
+
+        $latestSubscribers = Subscriber::orderByDesc('subscribed_at')
             ->take(5)
             ->get();
 
@@ -46,6 +49,7 @@ class StatsController extends Controller
             'latest_posts' => $latestPosts,
             'latest_users' => $latestUsers,
             'latest_comments' => $latestComments,
+            'latest_newsletter_subscribers' => $latestSubscribers,
         ]);
     }
 }
