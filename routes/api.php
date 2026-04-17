@@ -11,6 +11,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\SupportController;
 
 // Routes publiques pour l'inscription et la connexion
 Route::post('/register', [AuthController::class, 'register']);
@@ -56,6 +57,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route pour le formulaire de contact 
     Route::post('/contact', [ContactController::class, 'send']);
+
+    // Routes pour le chat 
+    Route::get('/support/conversation', [SupportController::class, 'getUserConversation']);
+    Route::post('/support/messages', [SupportController::class, 'sendMessage']);
+    Route::post('/support/conversation/read', [SupportController::class, 'markAsRead']);
     
     // Route pour la déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -105,6 +111,13 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/dash/newsletter', [NewsletterController::class, 'index']);
     Route::post('/dash/newsletter/send', [NewsletterController::class, 'send']);
     Route::post('/dash/newsletter/send-post', [NewsletterController::class, 'sendPost']);
+
+    // ------------- Routes pour le chat 
+    Route::get('/dashboard/support/conversations', [SupportController::class, 'adminIndexOpen']);
+    Route::get('/dashboard/support/conversations/history', [SupportController::class, 'adminIndexClosed']);
+    Route::get('/dashboard/support/conversations/{id}', [SupportController::class, 'adminShow']);
+    Route::post('/dashboard/support/conversations/{id}/messages', [SupportController::class, 'adminSendMessage']);
+    Route::patch('/dashboard/support/conversations/{id}/status', [SupportController::class, 'updateConversationStatus']);
 
 
     Route::post('/dash/logout', [AuthController::class, 'dashLogout']);

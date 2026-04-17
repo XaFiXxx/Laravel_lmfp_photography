@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Comment;
+use App\Models\SupportConversation;
+use App\Models\SupportMessage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -44,5 +46,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function comments()
     {
         return $this->hasMany(Comment::class, 'user_id', 'id');
+    }
+
+    public function supportConversations()
+    {
+        return $this->hasMany(SupportConversation::class);
+    }
+
+    public function supportMessages()
+    {
+        return $this->hasMany(SupportMessage::class, 'sender_id');
     }
 }
