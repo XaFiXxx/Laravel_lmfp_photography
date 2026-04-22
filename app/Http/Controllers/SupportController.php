@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SupportConversation;
 use App\Models\SupportMessage;
+use App\Events\SupportMessageSent;
 
 class SupportController extends Controller
 {
-
     // --------------- PUBLIC ------------------------
 
     public function getUserConversation()
@@ -60,8 +60,12 @@ class SupportController extends Controller
             'last_message_at' => now()
         ]);
 
+        $message->load('sender');
+
+        broadcast(new SupportMessageSent($message))->toOthers();
+
         return response()->json([
-            'message' => $message->load('sender')
+            'message' => $message
         ]);
     }
 
@@ -211,8 +215,12 @@ class SupportController extends Controller
             'last_message_at' => now(),
         ]);
 
+        $message->load('sender');
+
+        broadcast(new SupportMessageSent($message))->toOthers();
+
         return response()->json([
-            'message' => $message->load('sender')
+            'message' => $message
         ]);
     }
 
