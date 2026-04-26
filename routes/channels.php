@@ -16,3 +16,7 @@ Broadcast::channel('support.conversation.{id}', function ($user, $id) {
 
     return (bool) $user->isAdmin || (int) $conversation->user_id === (int) $user->id;
 });
+
+Broadcast::channel('admin.support', function ($user) {
+    return (bool) $user->isAdmin;
+});

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\SupportConversation;
 use App\Models\SupportMessage;
 use App\Events\SupportMessageSent;
+use App\Events\SupportConversationUpdated;
 
 class SupportController extends Controller
 {
@@ -61,8 +62,10 @@ class SupportController extends Controller
         ]);
 
         $message->load('sender');
+        $conversation->load('user');
 
         broadcast(new SupportMessageSent($message))->toOthers();
+        broadcast(new SupportConversationUpdated($conversation))->toOthers();
 
         return response()->json([
             'message' => $message
@@ -87,7 +90,9 @@ class SupportController extends Controller
         SupportMessage::where('conversation_id', $conversation->id)
             ->where('sender_role', 'admin')
             ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->update([
+                'is_read' => true
+            ]);
 
         return response()->json([
             'message' => 'Messages marqués comme lus.'
@@ -175,6 +180,8 @@ class SupportController extends Controller
             'messages.sender'
         ]);
 
+        broadcast(new SupportConversationUpdated($conversation))->toOthers();
+
         return response()->json([
             'conversation' => $conversation
         ]);
@@ -216,8 +223,10 @@ class SupportController extends Controller
         ]);
 
         $message->load('sender');
+        $conversation->load('user');
 
         broadcast(new SupportMessageSent($message))->toOthers();
+        broadcast(new SupportConversationUpdated($conversation))->toOthers();
 
         return response()->json([
             'message' => $message
@@ -249,6 +258,10 @@ class SupportController extends Controller
         $conversation->update([
             'status' => $request->status
         ]);
+
+        $conversation->load('user');
+
+        broadcast(new SupportConversationUpdated($conversation))->toOthers();
 
         return response()->json([
             'message' => 'Statut de la conversation mis à jour.',
