@@ -8,6 +8,8 @@ use App\Models\SupportConversation;
 use App\Models\SupportMessage;
 use App\Events\SupportMessageSent;
 use App\Events\SupportConversationUpdated;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewSupportTicketMail;
 
 class SupportController extends Controller
 {
@@ -41,12 +43,16 @@ class SupportController extends Controller
             ->latest()
             ->first();
 
+        $isNewTicket = false;
+
         if (!$conversation) {
             $conversation = SupportConversation::create([
                 'user_id' => $user->id,
                 'status' => 'open',
                 'last_message_at' => now(),
             ]);
+
+            $isNewTicket = true;
         }
 
         $message = SupportMessage::create([
@@ -63,6 +69,16 @@ class SupportController extends Controller
 
         $message->load('sender');
         $conversation->load('user');
+
+        if ($isNewTicket) {
+            $clientEmail = env('CONTACT_RECEIVER_EMAIL');
+
+            if ($clientEmail) {
+                Mail::to($clientEmail)->send(
+                    new NewSupportTicketMail($conversation, $message)
+                );
+            }
+        }
 
         broadcast(new SupportMessageSent($message))->toOthers();
         broadcast(new SupportConversationUpdated($conversation))->toOthers();
