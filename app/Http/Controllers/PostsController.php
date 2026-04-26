@@ -305,7 +305,6 @@ class PostsController extends Controller
 
     public function createPost(Request $request)
     {
-        // Validation des données envoyées par le front
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -317,11 +316,22 @@ class PostsController extends Controller
         DB::beginTransaction();
 
         try {
-            // Création du post sans image au départ
             $post = new Post();
             $post->user_id = Auth::id();
             $post->title = $request->title;
             $post->description = $request->description;
+
+            // Génération du slug unique
+            $baseSlug = Str::slug($request->title);
+            $newSlug = $baseSlug;
+            $counter = 1;
+
+            while (Post::where('slug', $newSlug)->exists()) {
+                $newSlug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+
+            $post->slug = $newSlug;
 
             // IMAGE PRINCIPALE
             if ($request->hasFile('image')) {
@@ -330,6 +340,10 @@ class PostsController extends Controller
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
                 $destinationPath = public_path('storage/img/posts/img');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
                 $image->move($destinationPath, $imageName);
 
@@ -349,10 +363,14 @@ class PostsController extends Controller
 
             // GALERIE
             if ($request->hasFile('gallery')) {
+                $galleryDestinationPath = public_path('storage/img/posts/gallery');
+
+                if (!file_exists($galleryDestinationPath)) {
+                    mkdir($galleryDestinationPath, 0755, true);
+                }
+
                 foreach ($request->file('gallery') as $galleryImage) {
                     $galleryName = time() . '_' . uniqid() . '.' . $galleryImage->getClientOriginalExtension();
-
-                    $galleryDestinationPath = public_path('storage/img/posts/gallery');
 
                     $galleryImage->move($galleryDestinationPath, $galleryName);
 
