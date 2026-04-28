@@ -75,7 +75,7 @@
                 <!-- CTA -->
                 <div style="margin-top:32px; text-align:center;">
                     <a
-                        href="{{ config('app.frontend_url') }}/dashboard/chat"
+                        href="{{ $chatUrl }}"
                         style="display:inline-block; background:#111827; color:#ffffff; text-decoration:none; padding:14px 24px; border-radius:999px; font-size:14px; font-weight:600;"
                     >
                         Voir le ticket

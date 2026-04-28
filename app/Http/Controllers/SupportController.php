@@ -73,9 +73,12 @@ class SupportController extends Controller
         if ($isNewTicket) {
             $clientEmail = env('CONTACT_RECEIVER_EMAIL');
 
+            $adminUrl = rtrim(env('FRONTEND_ADMIN_URL', config('app.url')), '/');
+            $chatUrl = $adminUrl . '/dashboard/chat';
+
             if ($clientEmail) {
                 Mail::to($clientEmail)->send(
-                    new NewSupportTicketMail($conversation, $message)
+                    new NewSupportTicketMail($conversation, $message, $chatUrl)
                 );
             }
         }

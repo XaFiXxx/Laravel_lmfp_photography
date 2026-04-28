@@ -14,7 +14,8 @@ class NewSupportTicketMail extends Mailable
 
     public function __construct(
         public SupportConversation $conversation,
-        public SupportMessage $supportMessage
+        public SupportMessage $supportMessage,
+        public string $chatUrl
     ) {}
 
     public function build()
